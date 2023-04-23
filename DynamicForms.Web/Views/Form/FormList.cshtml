@@ -1,0 +1,198 @@
+@model IList<DynamicForms.Domain.Forms.InputForm>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-5">
+    <h2 class="mb-4">Form Listesi</h2>
+    <div class="d-flex mb-3">
+        <input class="form-control me-2" type="search" placeholder="Form adına göre ara" aria-label="Search" id="searchInput">
+        <button class="btn btn-outline-success" type="button" onclick="searchTable()">Ara</button>
+    </div>
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+        <tr>
+            <th scope="col">Form ID</th>
+            <th scope="col">Form Adı</th>
+            <th scope="col">Form Açıklaması</th>
+            <th scope="col">Oluşturulma Tarihi</th>
+            <th scope="col">Güncelleme Tarihi</th>
+        </tr>
+        </thead>
+        <tbody id="formTableBody">
+        @foreach (var form in Model)
+        {
+            <tr>
+                <td>@form.Id</td>
+                <td>@form.Name</td>
+                <td>@form.Description</td>
+                <td>@form.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                <td>@form.UpdatedAt?.ToString("yyyy-MM-dd HH:mm")</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js" integrity="sha384-cn7l7gDp0eyniUwwAZgrzD06kc/tftFf19TOAs2zVinnD/C7E91j9yyk5//jjpt/" crossorigin="anonymous"></script>
+
+</body>
+</html>
+
+
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createFormModal">
+    Create Form
+</button>
+<div class="modal fade" id="createFormModal" tabindex="-1" aria-labelledby="createFormModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createFormModalLabel">Form Oluştur</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Form Creator goes here -->
+                <form id="createForm">
+                    <div class="mb-3">
+                        <label for="formName" class="form-label">Form Adı</label>
+                        <input type="text" class="form-control" id="formName" placeholder="Form Adı Giriniz">
+                    </div>
+                    <div class="mb-3">
+                        <label for="formDescription" class="form-label">Form Açıklaması</label>
+                        <textarea class="form-control" id="formDescription" rows="3" placeholder="Form Açıklaması Giriniz"></textarea>
+                    </div>
+
+                    <!-- Fields Container -->
+                    <div id="fieldsContainer"></div>
+
+                    <!-- Add Field Button -->
+                    <button type="button" class="btn btn-secondary mb-3" id="addFieldButton">Alan Ekle</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                <button type="button" class="btn btn-primary">Değişiklikleri Kaydet</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Form Creator -->
+
+<script>
+    // Add field button click event
+    document.getElementById("addFieldButton").addEventListener("click", function () {
+        addField();
+    });
+ // Save changes button click event
+    document.querySelector("#createFormModal .btn-primary").addEventListener("click", function () {
+        saveChanges();
+    });
+ function searchTable() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toUpperCase();
+            const table = document.getElementById('formTableBody');
+            const trs = table.getElementsByTagName('tr');
+        
+            for (let i = 0; i < trs.length; i++) {
+                const td = trs[i].getElementsByTagName('td')[1];
+                if (td) {
+                    const txtValue = td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        trs[i].style.display = '';
+                    } else {
+                        trs[i].style.display = 'none';
+                    }
+                }
+            }
+        }
+    // Save changes function
+    async function saveChanges() {
+        const formName = document.getElementById("formName").value;
+        const formDescription = document.getElementById("formDescription").value;
+        const fields = Array.from(document.getElementById("fieldsContainer").children).map(fieldContainer => {
+            return {
+                name: fieldContainer.querySelector("input[type='text']").value,
+                dataType: fieldContainer.querySelector("select").value,
+            };
+        });
+
+        const formData = {
+            name: formName,
+            description: formDescription,
+            fields: fields,
+        };
+
+        console.log(formData)
+        const response = await fetch("/Form/SaveForm", {
+            method: "POST",
+            async : false,
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(formData),
+        });
+
+        if (response.ok) {
+            alert("Form has been saved!");
+            location.reload();
+        } else {
+            alert("Error occurred while saving the form.");
+        }
+    }
+    // Add a new field to the form
+    function addField() {
+        const fieldsContainer = document.getElementById("fieldsContainer");
+
+        // Create a new field container
+        const fieldContainer = document.createElement("div");
+        fieldContainer.classList.add("mb-3");
+
+        // Create a new field label
+        const fieldLabel = document.createElement("label");
+        fieldLabel.classList.add("form-label");
+        fieldLabel.textContent = "Alan Adı";
+
+        // Create a new field input
+        const fieldInput = document.createElement("input");
+        fieldInput.type = "text";
+        fieldInput.classList.add("form-control");
+        fieldInput.placeholder = "Alan Adı Giriniz";
+
+        // Create a new field type label
+                const fieldTypeLabel = document.createElement("label");
+                fieldTypeLabel.classList.add("form-label", "mt-2");
+                fieldTypeLabel.textContent = "Alan Tipi";
+        
+                // Create a new field type select
+                const fieldTypeSelect = document.createElement("select");
+                fieldTypeSelect.classList.add("form-select");
+        
+                // Add available field types
+                const fieldTypes = [
+                    { value: "STRING", label: "Text" },
+                    { value: "NUMBER", label: "Number" },
+                ];
+        
+                fieldTypes.forEach((type) => {
+                    const option = document.createElement("option");
+                    option.value = type.value;
+                    option.textContent = type.label;
+                    fieldTypeSelect.appendChild(option);
+                });
+        
+                // Add elements to the field container
+                fieldContainer.appendChild(fieldLabel);
+                fieldContainer.appendChild(fieldInput);
+                fieldContainer.appendChild(fieldTypeLabel);
+                fieldContainer.appendChild(fieldTypeSelect);
+        
+                // Add the new field to the fields container
+                fieldsContainer.appendChild(fieldContainer);
+            }
+        </script>

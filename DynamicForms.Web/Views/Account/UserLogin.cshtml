@@ -1,0 +1,40 @@
+﻿@model DynamicForms.Domain.User.UserLoginDto
+@{
+    Layout = "_UserLoginLayout";
+    ViewBag.Title = "Giriş Yap";
+}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-lg rounded-lg">
+                <div class="card-header bg-primary py-3">
+                    <h4 class="text-center text-white mb-0"><i class="fas fa-house-user"></i> Giriş Yap</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-controller="Account" asp-action="Login" method="post">
+                        <div asp-validation-summary="All" class="text-danger"></div>
+                        <div class="form-group">
+                            <label class="small mb-1" asp-for="Email">E-posta Adresi:</label>
+                            <input class="form-control py-4" asp-for="Email" type="email" placeholder="Lütfen e-posta adresinizi giriniz." />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label class="small mb-1" asp-for="Password">Şifre:</label>
+                            <input class="form-control py-4" asp-for="Password" type="password" placeholder="Lütfen şifrenizi giriniz." />
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+                        <div class="form-group d-flex align-items-center justify-content-between mt-4 mb-0">
+                            <a class="small text-primary" href="#">Şifremi Unuttum</a>
+                            <button class="btn btn-primary px-4" type="submit"><i class="fas fa-sign-in-alt"></i> Giriş Yap</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer bg-light py-3">
+                    <div class="text-center">
+                        <span class="text-muted">Hesabınız yok mu? </span><a class="text-primary font-weight-bold" href="#">Kayıt Ol</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
